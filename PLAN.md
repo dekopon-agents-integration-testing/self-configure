@@ -6,14 +6,14 @@
 
 Resume only when all prerequisite evidence is available:
 
-- [ ] The specific native repository file-commit task is recorded in the diaphanous epoch with an identifiable owner/task reference. At this checkpoint it is still only a draft, **not queued**; the broader `gh` parity queue does not cover this requirement by implication.
-- [ ] The provider implements bounded atomic repository file commits, with explicit repository/branch selection, enforceable path restrictions, documented conflict behavior and broker-only credentials. The proposed command names below may change; the behavior is the requirement.
-- [ ] The provider's required tests pass, including real-component request evidence, denied/out-of-scope writes, stale-head/conflict handling and no visible partial multi-file update.
+- [x] The missing native file-write prerequisite is queued as priority work in Diaphanous Dilettantes (2026-11-01 UTC). Dispatch details remain in the private campaign ledger; no implementation has been launched by this planning session.
+- [ ] The provider implements bounded single-file creation/replacement, with explicit repository/branch selection, enforceable path restrictions, documented file-SHA conflict behavior and broker-only credentials. Use the released command contract, not an invented upstream CLI spelling.
+- [ ] The provider's required tests pass, including real-component request evidence, denied/out-of-scope writes, stale-file/conflict handling and no automatic write retry.
 - [ ] A compatible provider artifact is released by its source repository. Record its release URL, version, checksum/digest, actual command/input contract and required Dekopon image/chart versions here. A plan, queued task, open PR or unreleased merge does not unblock this test.
 
 Before the first live run after resumption, verify the App installation and repository-selected secrets, remaining OpenRouter allowance and the $10 non-resetting limit. Bind the agent only to the intended run branch/config paths, and establish the independent verifier, runtime bounds and cleanup described below.
 
-No prerequisite has been marked complete merely by parking this plan. There is no active implementation worker, automatic dependency watcher or pending integration run. Revisit explicitly when the provider release is available; do not bypass the dependency with an unrestricted CLI, arbitrary API writes or CI-authored changes presented as agent success.
+Queueing is the only completed prerequisite; it is not an implementation or release receipt. There is no active implementation worker, automatic dependency watcher or pending integration run. Revisit explicitly when the provider release is available; do not bypass the dependency with an unrestricted CLI, arbitrary API writes or CI-authored changes presented as agent success.
 
 Only the file-commit power is a known missing agent capability for the first scenario. Broader PR, issue, release, secret-management and repository-administration parity is not a prerequisite.
 
@@ -55,11 +55,11 @@ Credential values are not stored in Git. Temporary credential-transfer files wer
 
 At assessment, `dekopon-provider-gh` main and its latest release, `v0.12.0`, lacked repository file writes. Its `gh` command is a bounded native provider interface, not the full upstream CLI; arbitrary `gh api` writes are intentionally unavailable.
 
-A planner assessed the missing capability and drafted the following task. **This specific task has NOT been added to the diaphanous epoch queue, implemented, or released.** Do not mistake the draft for scheduled work.
+Planning update, 2026-11-01 UTC: the native file-write prerequisite is now queued as priority work. The first integration scenario needs only one bounded configuration file created or replaced per commit. The earlier multi-file/delete/head-CAS proposal was not an owner-frozen requirement and is no longer a prerequisite.
 
-> Add native `gh.content.commit` and a `gh repo commit-files` command for bounded file creates, replacements and deletions, published as one visible atomic multi-file commit. Require an explicit repository, branch and expected head SHA; enforce owner-defined repository/branch/path restrictions. Preserve broker-only credentials, reject conflicts without automatic retry, and exclude arbitrary API passthrough. Test authorization, bounds, concurrency, failure behavior and the real Wasm component's HTTP requests.
+A replacement must pin the expected file version. This does not promise compare-and-swap on the entire branch head: an unrelated commit may advance the branch. CI creates the isolated run branch, the agent changes only its permitted configuration file, and the independent verifier checks the resulting commit and activation. No deletes, multi-file transaction, generic API passthrough or automatic retries are needed.
 
-Implementation details remain for the provider owner to settle. In particular, verify the actual GitHub API concurrency contract: a non-force ref update must not be described as a strict compare-and-swap without proof. Avoid sequential file writes that expose partially updated configuration. The planner suggested 1–16 UTF-8 files, 64 KiB per file and 256 KiB total as provisional bounds, not settled public contracts.
+Exact command/schema, bounds and artifact pins will be taken from the released provider. Keep the scenario within one small data/configuration file; do not simulate a multi-file transaction through sequential writes or substitute CI-authored changes for agent success.
 
 The existing private campaign-trail epoch is `store/epochs/diaphanous-dilettantes/`, with related work under `21-gh-parity/`. Its parity inventory already plans PR/issue creation and editing, releases, secrets and repository administration. Do not duplicate those tasks; none is required for this first scenario.
 
@@ -150,7 +150,7 @@ Always destroy the task-owned cluster and stop tunnels/forwarders. Preserve fail
 
 ## Implementation sequence
 
-1. Upstream prerequisite, not active work in this parked repository: record the file-commit task in the existing epoch, settle its contract, implement and release it in `dekopon-provider-gh`.
+1. Upstream prerequisite, now queued but not implemented: settle the native single-file write contract, implement and release it in `dekopon-provider-gh`.
 2. Once the required preconditions above are evidenced and this plan is explicitly resumed, implement the fixed CI/bootstrap harness on this repository's `main`, using `workflow_dispatch`.
 3. Prove deterministic reconciliation with a CI-authored fixture change. Label this infrastructure validation, not the agent test.
 4. Replace the fixture writer with Terra using the released native `gh` capability; keep the same independent verifier.
