@@ -1,4 +1,21 @@
-# Plan only — the integration test is not implemented
+# PARKED — plan only; the integration test is not implemented
+
+## Status and required preconditions
+
+**Owner decision: park this integration test until the required native `gh` tools land.** Do not implement the harness, dispatch CI, provision a cluster or spend model credit while parked. Existing GitHub/OpenRouter resources remain provisioned; this pause does not revoke or rotate them.
+
+Resume only when all prerequisite evidence is available:
+
+- [ ] The specific native repository file-commit task is recorded in the diaphanous epoch with an identifiable owner/task reference. At this checkpoint it is still only a draft, **not queued**; the broader `gh` parity queue does not cover this requirement by implication.
+- [ ] The provider implements bounded atomic repository file commits, with explicit repository/branch selection, enforceable path restrictions, documented conflict behavior and broker-only credentials. The proposed command names below may change; the behavior is the requirement.
+- [ ] The provider's required tests pass, including real-component request evidence, denied/out-of-scope writes, stale-head/conflict handling and no visible partial multi-file update.
+- [ ] A compatible provider artifact is released by its source repository. Record its release URL, version, checksum/digest, actual command/input contract and required Dekopon image/chart versions here. A plan, queued task, open PR or unreleased merge does not unblock this test.
+
+Before the first live run after resumption, verify the App installation and repository-selected secrets, remaining OpenRouter allowance and the $10 non-resetting limit. Bind the agent only to the intended run branch/config paths, and establish the independent verifier, runtime bounds and cleanup described below.
+
+No prerequisite has been marked complete merely by parking this plan. There is no active implementation worker, automatic dependency watcher or pending integration run. Revisit explicitly when the provider release is available; do not bypass the dependency with an unrestricted CLI, arbitrary API writes or CI-authored changes presented as agent success.
+
+Only the file-commit power is a known missing agent capability for the first scenario. Broader PR, issue, release, secret-management and repository-administration parity is not a prerequisite.
 
 ## Goal
 
@@ -133,8 +150,8 @@ Always destroy the task-owned cluster and stop tunnels/forwarders. Preserve fail
 
 ## Implementation sequence
 
-1. Add the file-commit task to the existing epoch, settle its contract, implement and release it in `dekopon-provider-gh`.
-2. Implement the fixed CI/bootstrap harness on this repository's `main`, using `workflow_dispatch`.
+1. Upstream prerequisite, not active work in this parked repository: record the file-commit task in the existing epoch, settle its contract, implement and release it in `dekopon-provider-gh`.
+2. Once the required preconditions above are evidenced and this plan is explicitly resumed, implement the fixed CI/bootstrap harness on this repository's `main`, using `workflow_dispatch`.
 3. Prove deterministic reconciliation with a CI-authored fixture change. Label this infrastructure validation, not the agent test.
 4. Replace the fixture writer with Terra using the released native `gh` capability; keep the same independent verifier.
 5. Run the real bounded experiment and record actual results, failures and spending.
@@ -154,6 +171,7 @@ The first three require an explicit follow-on design for authority, restart/cont
 ## Resume checklist
 
 - Recheck actual repository, provider release and epoch queue state; this document is a checkpoint, not live status.
-- Confirm the dedicated OpenRouter key still has allowance and the GitHub App installation still targets only this repository.
-- Ensure the native file-commit task is genuinely queued before claiming it is.
+- Fill in the prerequisite evidence above, including the real epoch task reference and released artifact pins. Remain parked if any prerequisite is missing.
+- Confirm the dedicated OpenRouter key still has allowance and the GitHub App installation still targets only this repository; do not expose credential values.
+- Record the explicit resumption before starting implementation or dispatching a run.
 - Preserve the distinction between provisioned credentials, implemented infrastructure and a proven agent-driven passing run.
