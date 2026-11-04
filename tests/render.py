@@ -231,9 +231,9 @@ permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"g
                 "command": [
                     "python",
                     "-c",
-                    f'import urllib.request,hashlib,os; p="/providers/gh.wasm"; b=urllib.request.urlopen("https://github.com/dekopon-agents/dekopon-provider-gh/releases/download/v0.13.0/gh-provider.wasm",timeout=60).read(); assert hashlib.sha256(b).hexdigest()=="{WASM}"; open(p,"wb").write(b); os.chown(p,65532,65532); os.chmod(p,0o600)',
+                    f'import urllib.request,hashlib,os; p="/providers/gh.wasm"; b=urllib.request.urlopen("https://github.com/dekopon-agents/dekopon-provider-gh/releases/download/v0.13.0/gh-provider.wasm",timeout=60).read(); assert hashlib.sha256(b).hexdigest()=="{WASM}"; open(p,"wb").write(b); os.chown(p,65532,65532); os.chmod(p,0o600); os.chmod("/providers",0o700); os.chown("/providers",65532,65532); os.chmod("/gateway-tmp",0o700); os.chown("/gateway-tmp",65533,65533)',
                 ],
-                "volumeMounts": [{"name": "gh-provider", "mountPath": "/providers"}],
+                "volumeMounts": [{"name": "gh-provider", "mountPath": "/providers"}, {"name": "gateway-tmp", "mountPath": "/gateway-tmp"}],
             },
         )
         for container in spec["initContainers"]:

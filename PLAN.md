@@ -44,3 +44,20 @@ revoked by the token action's post step.
 The polling fix treats an absent child as pending while retaining the bounded
 deadline. Regression tests cover absence and exact revision matching. This fix
 has local validation only; no second dispatch was performed.
+
+## Second run receipt
+
+Xavier authorized another attempt with the polling fix.
+[Run 41757162939](https://github.com/dekopon-agents-integration-testing/self-configure/actions/runs/41757162939)
+tested `173b5a21fa49245d0001b9ccae8b67f48c36ce08`. Argo created its child
+Applications and the catalog reconciled fixture commit
+`2b6ed92368074f781ae894bb647d03b842b60658`. The broker refused startup because
+its provider emptyDir retained unprotected group/world writes on `/providers`.
+The deployment rollout timed out. No model invocation, agent commit or activation
+was observed. Usage remains $0, with $10 available. Cluster, branch and network
+cleanup completed and the App token action's post step succeeded.
+
+The init container now makes the provider directory broker-owned and 0700. It
+also prepares the gateway's shared temporary directory as gateway-owned and
+0700, as required by the local transport socket admission check. These filesystem
+fixes have local validation only; no third dispatch was performed.
