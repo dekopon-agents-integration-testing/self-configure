@@ -74,3 +74,9 @@ was accepted and gh v0.13.0 loaded. Gateway startup refused because its service
 principal was `gateway`, while the runtime's reconciliation owner is
 `dekopon-gatewayd`. No inference occurred; allowance remains $10. Cleanup
 completed. The repair names that existing runtime identity in mapping and policy.
+
+Bounded-push attempt 2: run 41764563380 tested 462ef3a. Daemons and local
+transport started. The baseline verifier had no provider grants, so the runtime
+rejected its session before inference. Repair grants it only content read under
+the existing exact repository/path/ref fence; it retains no write authority.
+Usage remains $0 and cleanup succeeded.

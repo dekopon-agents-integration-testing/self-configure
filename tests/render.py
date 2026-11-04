@@ -20,6 +20,7 @@ def render(branch, chart):
 permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"gh.content.read", Dekopon::Action::"gh.content.write"], resource == Dekopon::Provider::"gh") when { context.via == "dekopon-gatewayd" && context.agent == "self-configure" };
 """
     policy += 'permit(principal == Dekopon::Principal::"verifier", action == Dekopon::Action::"agent.prompt", resource == Dekopon::Agent::"self-configure") when { context.via == "dekopon-gatewayd" };\n'
+    policy += 'permit(principal == Dekopon::Principal::"verifier", action == Dekopon::Action::"gh.content.read", resource == Dekopon::Provider::"gh") when { context.via == "dekopon-gatewayd" && context.agent == "self-configure" };\n'
     for action, method, extra in [
         (
             "write",
