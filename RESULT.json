@@ -1,0 +1,73 @@
+{
+  "runUrl": "https://github.com/dekopon-agents-integration-testing/self-configure/actions/runs/41765296834",
+  "verdict": {
+    "passed": true,
+    "testedCommit": "7e859c045e069cb03527ed0ad2aa0a2eb3c3311c",
+    "seedCommit": "8d123824e3ca622171bc9ba92681a65610d5e00c",
+    "agentCommit": "8c080731be3e80b9339f09a392327eed9a037c27",
+    "generation": "7de684c7f226545fe585f4fee3d070d07d78ec1d9e56b22df16c9d05be0121fa"
+  },
+  "artifactPins": {
+    "core": "ghcr.io/dekopon-agents/dekopon@sha256:0675042964e3d35673aa652e90ccdbe914013fbdcc067c177895b93f24907f6a",
+    "coreVersion": "v0.84.0",
+    "chartVersion": "0.71.0",
+    "chartSha256": "287b5773424cfbdf9db57aa49c9a964489eab96520d223f2fca4ba2b926179bc",
+    "ghVersion": "v0.13.0",
+    "ghSha256": "8fe93ef36199e3689f7a260c505343beb9dd4b7a8c0b0edaa3f5adadd7d3ceed",
+    "kindVersion": "v0.30.0",
+    "kindNode": "kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a",
+    "argoVersion": "v3.6.0",
+    "argoCommit": "f55566445ee3a2a4f3339bf10df0f6bc1ecf7f23"
+  },
+  "baseline": {
+    "reply": "BASELINE:6392608b8d2f4062ba43b30c78216941",
+    "conversationId": "8aff4a7b-9b17-481e-b34b-32314c5be36f"
+  },
+  "freshChallenge": {
+    "reply": "CONFIGURED:ef796d93ae6747bcb6d9b8d6e9c22be7",
+    "conversationId": "f4133dc2-2cf5-49ea-b221-112f1447a4af"
+  },
+  "activation": {
+    "baselineDigest": "0e45a8e562aed70b9441325a45011f328186e7a18fe277d62aae6e22b613c675",
+    "digest": "7de684c7f226545fe585f4fee3d070d07d78ec1d9e56b22df16c9d05be0121fa",
+    "events": [
+      {
+        "timestamp": "2026-11-04T03:12:15.305107Z",
+        "level": "INFO",
+        "message": "gateway.reload.applied",
+        "event": "gateway_reload_applied",
+        "generation.digest": "7de684c7f226545fe585f4fee3d070d07d78ec1d9e56b22df16c9d05be0121fa",
+        "category.count": 1,
+        "categories": "catalog",
+        "target": "dekopon_gatewayd::gateway"
+      }
+    ]
+  },
+  "argo": {
+    "revision": "8c080731be3e80b9339f09a392327eed9a037c27",
+    "status": "Synced"
+  },
+  "write": {
+    "invocation.id": "f0ac5fcb1980d9eb2ec6dff5a9071bcb-6",
+    "capability.id": "gh.content.write",
+    "provider.artifact_sha256": "8fe93ef36199e3689f7a260c505343beb9dd4b7a8c0b0edaa3f5adadd7d3ceed",
+    "outcome": "Succeeded",
+    "http.calls": "[{\"method\":\"PUT\",\"authority\":\"api.github.com:443\",\"status\":200,\"requestBytes\":1647,\"responseBytes\":5027,\"upstreamRequestId\":\"1441:1B1917:220CD20:6FA1A83:6AEAA257\",\"credentialInjected\":true}]",
+    "trace_id": "f0ac5fcb1980d9eb2ec6dff5a9071bcb"
+  },
+  "spending": {
+    "label": "[REDACTED]...54d",
+    "limit": 10,
+    "limit_remaining": 9.98642995,
+    "limit_reset": null,
+    "usage": 0.01357005,
+    "is_free_tier": false
+  },
+  "cleanup": {
+    "clusterDeleted": true,
+    "branchDeleted": true,
+    "networkDeleted": true,
+    "appTokenRevoked": true
+  },
+  "boundedPushRunsUsed": 4
+}

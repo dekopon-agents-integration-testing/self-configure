@@ -23,8 +23,8 @@ openai/gpt-6.1-terra, with no fallback, under the existing $10 non-resetting cap
 The workflow checks allowance before inference and records allowance afterward.
 No new credentials or budget are authorized.
 
-The evidence artifact is the run receipt, including failed verdicts. A single
-manual run is authorized; preserve its outcome without automatically rerunning.
+The evidence artifact is the run receipt, including failed verdicts. Manual
+runs follow the bounded-push authorization below; preserve every outcome.
 Restart survival, broken deployment repair, arbitrary workload changes and real
 external webhook delivery remain follow-ons. No RPi deployment is involved.
 
@@ -88,3 +88,24 @@ the secret binding's default allowQuery=false refused injection. No write was
 made. Repair enables queries only for the GET binding; Cedar still pins the
 exact ref query. Model usage appears in runtime records; the immediate key
 allowance endpoint still reported $10, so that snapshot may lag billing.
+
+
+## Passing receipt — bounded-push attempt 4
+
+[Run 41765296834](https://github.com/dekopon-agents-integration-testing/self-configure/actions/runs/41765296834)
+passed on tested harness commit `7e859c045e069cb03527ed0ad2aa0a2eb3c3311c`.
+Terra, using native gh, authored the single-file commit
+`8c080731be3e80b9339f09a392327eed9a037c27` as the integration App bot.
+The broker recorded one successful gh.content.write and a credential-injected
+HTTP PUT returning 200. Argo's catalog Application was Synced at that exact
+commit. Gateway catalog activation changed the generation digest, and a new
+conversation returned CONFIGURED with a new nonce after the baseline had
+returned BASELINE. Independent inspection of the downloaded artifact confirmed
+commit scope, write execution, exact applied revision and both serving generations.
+The durable condensed receipt is RESULT.json; full sanitized traces and diffs
+remain in the Actions artifact and the local ignored evidence directory.
+
+The final allowance snapshot reports $0.01357005 total usage and $9.98642995
+remaining; vendor accounting may lag. Cluster, run branch, Docker network and
+installation token cleanup succeeded. Four of the ten authorized additional
+runs were used. Stop on this proven success; no further dispatch is needed.
