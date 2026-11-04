@@ -80,3 +80,11 @@ transport started. The baseline verifier had no provider grants, so the runtime
 rejected its session before inference. Repair grants it only content read under
 the existing exact repository/path/ref fence; it retains no write authority.
 Usage remains $0 and cleanup succeeded.
+
+Bounded-push attempt 3: run 41764882481 tested 34ce57d. Terra answered the
+baseline correctly with an independently correlated generation. The native gh
+read reached the HTTP request, with Cedar allowing the exact encoded ref, but
+the secret binding's default allowQuery=false refused injection. No write was
+made. Repair enables queries only for the GET binding; Cedar still pins the
+exact ref query. Model usage appears in runtime records; the immediate key
+allowance endpoint still reported $10, so that snapshot may lag billing.

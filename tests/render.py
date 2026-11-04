@@ -122,6 +122,7 @@ permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"g
                 id="gh-" + name,
                 capabilities=["gh.content." + name],
                 allowedMethods=[method],
+                allowQuery=(name == "read"),
             )
         )
     gateway = {
