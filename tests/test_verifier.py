@@ -57,5 +57,18 @@ class Reconciliation(unittest.TestCase):
             self.assertTrue(run.synced("catalog", "expected"))
 
 
+class RuntimeEvidence(unittest.TestCase):
+    def test_flat_successful_execution_is_required(self):
+        good={"audit.event":"broker.execution","capability.id":"gh.content.write","outcome":"Succeeded"}
+        self.assertEqual(run.successful_writes([good]),[good])
+        self.assertEqual(run.successful_writes([dict(good,outcome="Denied")]),[])
+        self.assertEqual(run.successful_writes([{ "message":"gh.content.write" }]),[])
+
+    def test_generation_must_belong_to_exact_conversation(self):
+        event={"audit.event":"reply.delivered","spans":[{"conversation.id":"fresh","generation.digest":"new"}]}
+        self.assertEqual(run.serving_digest([event],"fresh"),"new")
+        with self.assertRaises(AssertionError): run.serving_digest([event],"old")
+
+
 if __name__ == "__main__":
     unittest.main()

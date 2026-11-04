@@ -1,7 +1,7 @@
 import json
 import socket
 import sys
-import uuid
+
 
 s = socket.socket(socket.AF_UNIX)
 s.settimeout(180)
@@ -12,7 +12,7 @@ s.sendall(
             {
                 "subject": "drn:tel:number::"
                 + ("16035550101" if sys.argv[1] == "tester" else "16035550102"),
-                "conversation": {"kind": "directMessage", "id": str(uuid.uuid4())},
+                "conversation": {"kind": "directMessage", "id": sys.argv[2]},
                 "text": sys.stdin.read(),
             }
         )

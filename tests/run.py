@@ -18,7 +18,7 @@ BRANCH = "runs/" + os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_AT
 
 def run(*args, data=None):
     p = subprocess.run(
-        args, input=data, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        args, input=data, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=330
     )
     if p.returncode:
         raise RuntimeError(f"{args[0]} {args[1:3]} failed: " + p.stderr[:3000])
@@ -107,6 +107,13 @@ def synced(name, sha):
 
 
 def ask(text, writer=False):
+    conversation = str(uuid.uuid4())
+    result = _ask(text, writer, conversation)
+    result["conversationId"] = conversation
+    return result
+
+
+def _ask(text, writer, conversation):
     return json.loads(
         k(
             "-n",
@@ -120,6 +127,7 @@ def ask(text, writer=False):
             "python",
             "/helper/ask.py",
             "tester" if writer else "verifier",
+            conversation,
             data=text,
         )
     )
@@ -149,7 +157,32 @@ def verify_commits(base, head):
     return commits
 
 
+def events(raw):
+    return [json.loads(line) for line in raw.splitlines() if line.startswith("{")]
+
+
+def serving_digest(records, conversation):
+    for event in reversed(records):
+        if event.get("audit.event") != "reply.delivered":
+            continue
+        for span in event.get("spans", []) + [event.get("span", {})]:
+            if span.get("conversation.id") == conversation and span.get("generation.digest"):
+                return span["generation.digest"]
+    raise AssertionError("missing generation for exact challenge conversation")
+
+
+def successful_writes(records):
+    return [e for e in records if e.get("audit.event") == "broker.execution"
+            and e.get("capability.id") == "gh.content.write" and e.get("outcome") == "Succeeded"]
+
+
+def phase(name):
+    print("PHASE: " + name, flush=True)
+    save("phase.json", {"phase": name})
+
+
 def main():
+    phase("preflight")
     allowance("allowance-before.json")
     save("artifact-pins.json", json.loads(Path("pins.json").read_text()))
     with urllib.request.urlopen("https://openrouter.ai/api/v1/models", timeout=20) as r:
@@ -178,6 +211,7 @@ def main():
         hashlib.sha256(Path(chart).read_bytes()).hexdigest()
         == "287b5773424cfbdf9db57aa49c9a964489eab96520d223f2fca4ba2b926179bc"
     )
+    phase("bootstrap")
     render(BRANCH, chart)
     run("git", "switch", "-c", BRANCH)
     run("git", "add", "-f", "runtime", "apps", "config/mutable/kustomization.yaml")
@@ -232,7 +266,9 @@ def main():
         "-",
         data=yaml.safe_dump_all([project, application("root", "apps", BRANCH)]),
     )
+    phase("seed-reconciliation")
     wait(lambda: synced("catalog", seed), 240)
+    phase("startup")
     k("-n", "experiment", "rollout", "status", "deployment/dekopon", "--timeout=300s")
     wait(
         lambda: (
@@ -251,16 +287,22 @@ def main():
             == "True"
         )
     )
+    phase("baseline")
     nonce = uuid.uuid4().hex
     response = ask("CHALLENGE:" + nonce)
     save("baseline-response.json", response)
     assert response["reply"] == "BASELINE:" + nonce, (
         "baseline failed to demonstrate seed behavior"
     )
+    baseline_conversation = response["conversationId"]
     before = logs("gateway")
+    baseline_digest = serving_digest(events(before), baseline_conversation)
+    cutoff = max(e.get("timestamp", "") for e in events(before))
+    phase("agent-write")
     (E / "gateway-before.log").write_text(before)
     task = f"Update {PATH} in {REPO} on existing branch {BRANCH}. Read the file using native gh, then replace only BASELINE: with CONFIGURED: in its instructions. Keep the entire valid agent document and all other fields. Commit using the observed file blob SHA and native gh repo write-file. Maximum three capability calls in this turn; read then write should suffice. Do not answer the challenge now."
     save("agent-task-response.json", ask(task, True))
+    phase("verify-commit")
     head = gh(f"repos/{REPO}/git/ref/heads/{BRANCH}")["object"]["sha"]
     verify_commits(seed, head)
     content = gh(f"repos/{REPO}/contents/{PATH}?ref={head}")
@@ -270,6 +312,7 @@ def main():
         Path(PATH).read_text().replace("BASELINE:", "CONFIGURED:")
     ), "unexpected config change"
     save("candidate.json", {"sha": head, "blobSha": content["sha"], "config": blob})
+    phase("candidate-reconciliation")
     # Freeze reconciliation to the observed commit; no later branch movement can satisfy the verdict.
     k(
         "-n",
@@ -321,7 +364,14 @@ def main():
             == blob
         )
     )
-    wait(lambda: "gateway_reload_applied" in logs("gateway")[len(before) :])
+    phase("activation")
+    def activations():
+        return [e for e in events(logs("gateway")) if e.get("event") == "gateway_reload_applied"
+                and e.get("timestamp", "") > cutoff and e.get("generation.digest") != baseline_digest]
+    wait(lambda: bool(activations()))
+    digest = activations()[-1]["generation.digest"]
+    save("activation.json", {"baselineDigest": baseline_digest, "digest": digest, "events": activations()})
+    phase("fresh-challenge")
     nonce = uuid.uuid4().hex
     response = ask("CHALLENGE:" + nonce)
     save("fresh-response.json", response)
@@ -330,18 +380,11 @@ def main():
     broker = logs("broker")
     (E / "gateway.log").write_text(gateway)
     (E / "broker.log").write_text(broker)
-    assert "gh.content.write" in broker, "missing native write evidence"
-    events = [json.loads(line) for line in gateway.splitlines() if line.startswith("{")]
-    applied = [
-        e
-        for e in events
-        if e.get("fields", {}).get("event") == "gateway_reload_applied"
-    ]
-    assert applied, "missing activation"
-    digest = applied[-1]["fields"]["generation.digest"]
-    assert digest and any(
-        digest in json.dumps(e.get("spans", [])) for e in events if e not in applied
-    ), "missing fresh generation evidence"
+    writes = successful_writes(events(broker))
+    assert writes, "missing successful native write execution"
+    save("write-receipts.json", writes)
+    assert serving_digest(events(gateway), response["conversationId"]) == digest, "fresh turn used wrong generation"
+    assert response["conversationId"] != baseline_conversation
     assert gh(f"repos/{REPO}/git/ref/heads/{BRANCH}")["object"]["sha"] == head, (
         "branch moved during verification"
     )
@@ -364,11 +407,20 @@ if __name__ == "__main__":
         save("verdict.json", {"passed": False, "error": str(exc)})
         raise
     finally:
+        for name, args in {
+            "applications.json": ["-n", "argocd", "get", "applications", "-o", "json"],
+            "pod-status.json": ["-n", "experiment", "get", "pods", "-o", "json"],
+        }.items():
+            try: (E/name).write_text(k(*args))
+            except Exception as exc: (E/(name+".error")).write_text(str(exc))
         for c in ["gateway", "broker", "fetch-gh", "prepare-files"]:
             try:
                 (E / (c + "-final.log")).write_text(logs(c))
-            except Exception:
-                pass
+            except Exception as exc:
+                (E/(c+"-log.error")).write_text(str(exc))
+            try:
+                (E/(c+"-previous.log")).write_text(k("-n","experiment","logs","deployment/dekopon","-c",c,"--previous","--tail=200","--limit-bytes=65536"))
+            except Exception: pass
         try:
             allowance("allowance-after.json")
         except Exception:

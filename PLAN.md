@@ -61,3 +61,10 @@ The init container now makes the provider directory broker-owned and 0700. It
 also prepares the gateway's shared temporary directory as gateway-owned and
 0700, as required by the local transport socket admission check. These filesystem
 fixes have local validation only; no third dispatch was performed.
+
+## Approved bounded push
+
+Xavier authorized up to ten additional manual runs after the second receipt,
+within the existing $10 total model allowance. Stop on success or either limit.
+Every further dispatch follows a diagnosed defect and concrete repair; failed
+runs remain preserved. No authority, credential or budget expansion is implied.
