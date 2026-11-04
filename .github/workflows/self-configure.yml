@@ -1,0 +1,80 @@
+name: Independent self-configuration
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: self-configure
+  cancel-in-progress: false
+jobs:
+  experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        id: app
+        with:
+          app-id: ${{ vars.SELF_CONFIGURE_APP_ID }}
+          private-key: ${{ secrets.SELF_CONFIGURE_APP_PRIVATE_KEY }}
+          owner: dekopon-agents-integration-testing
+          repositories: self-configure
+      - name: Prepare pinned tools and cluster
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/experiment-python
+          /tmp/experiment-python/bin/pip install PyYAML==6.0.3
+          echo /tmp/experiment-python/bin >> "$GITHUB_PATH"
+          /tmp/experiment-python/bin/python -c 'import sys; sys.path.insert(0,"tests"); import run; run.allowance("allowance-before.json")'
+          echo "SELF_CONFIGURE_DOCKER=$(command -v docker)" >> "$GITHUB_ENV"
+          mkdir -p /tmp/experiment-bin
+          cp tests/docker-label.sh /tmp/experiment-bin/docker
+          echo /tmp/experiment-bin >> "$GITHUB_PATH"
+          SELF_CONFIGURE_DOCKER=$(command -v docker)
+          export SELF_CONFIGURE_DOCKER
+          export PATH=/tmp/experiment-bin:$PATH
+          curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v0.30.0/kind-linux-amd64 -o /tmp/kind
+          echo '517ab7fc89ddeed5fa65abf71530d90648d9638ef0c4cde22c2c11f8097b8889  /tmp/kind' | sha256sum -c -
+          chmod +x /tmp/kind
+          /tmp/kind create cluster --name self-configure --image kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a --wait 120s
+          kubectl --context=kind-self-configure create namespace argocd
+          kubectl --context=kind-self-configure apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/f55566445ee3a2a4f3339bf10df0f6bc1ecf7f23/manifests/install.yaml
+          kubectl --context=kind-self-configure -n argocd rollout status deployment/argocd-repo-server --timeout=180s
+          kubectl --context=kind-self-configure -n argocd rollout status statefulset/argocd-application-controller --timeout=180s
+      - name: Run experiment once
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          APP_TOKEN: ${{ steps.app.outputs.token }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python3 tests/run.py
+      - name: Cleanup
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          mkdir -p evidence
+          kubectl --context=kind-self-configure get pods -A -o wide > evidence/pods.txt 2>&1
+          kubectl --context=kind-self-configure -n experiment get events --field-selector type=Warning > evidence/events.txt 2>&1
+          /tmp/kind delete cluster --name self-configure > evidence/cluster-cleanup.txt 2>&1
+          cluster_status=$?
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/runs/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" > evidence/branch-cleanup.txt 2>&1
+          branch_status=$?
+          docker network prune -f --filter label=campaign=dekopon > evidence/network-cleanup.txt 2>&1
+          printf 'cluster_exit=%s\nbranch_exit=%s\n' "$cluster_status" "$branch_status" > evidence/cleanup.txt
+          test "$cluster_status" -eq 0 && test "$branch_status" -eq 0
+      - name: Sanitize evidence
+        if: always()
+        env:
+          APP_TOKEN: ${{ steps.app.outputs.token }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python3 tests/sanitize.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: self-configure-evidence
+          path: evidence/
+          retention-days: 14

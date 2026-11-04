@@ -1,0 +1,6 @@
+configMapGenerator:
+- name: agent-catalog
+  files:
+  - dekopon.yaml=agent.yaml
+generatorOptions:
+  disableNameSuffixHash: true

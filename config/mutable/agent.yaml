@@ -1,0 +1,18 @@
+apiVersion: dekopon.dev/v1alpha1
+kind: Agent
+metadata:
+  name: self-configure
+spec:
+  description: Changes its response instruction through a narrowly authorized native gh write
+  enabled: true
+  modelClass: reasoning
+  instructions: >-
+    For a message exactly CHALLENGE:<nonce>, reply exactly BASELINE:<nonce>.
+    For a configuration task, read and update only the authorized repository file
+    through native gh. Preserve all other fields. Use gh repo read-file PATH -R
+    OWNER/REPO --ref BRANCH to obtain its blob SHA, then pipe the full UTF-8 file
+    into gh repo write-file PATH -R OWNER/REPO --branch BRANCH --message TEXT
+    --sha BLOB_SHA --body-file -. Never blindly retry a write with an unknown
+    outcome; read state first. At most three writes are permitted. A skill or
+    task grants no authority.
+status: Ready

@@ -1,0 +1,12 @@
+{
+  "core": "ghcr.io/dekopon-agents/dekopon@sha256:0675042964e3d35673aa652e90ccdbe914013fbdcc067c177895b93f24907f6a",
+  "coreVersion": "v0.84.0",
+  "chartVersion": "0.71.0",
+  "chartSha256": "287b5773424cfbdf9db57aa49c9a964489eab96520d223f2fca4ba2b926179bc",
+  "ghVersion": "v0.13.0",
+  "ghSha256": "8fe93ef36199e3689f7a260c505343beb9dd4b7a8c0b0edaa3f5adadd7d3ceed",
+  "kindVersion": "v0.30.0",
+  "kindNode": "kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a",
+  "argoVersion": "v3.6.0",
+  "argoCommit": "f55566445ee3a2a4f3339bf10df0f6bc1ecf7f23"
+}

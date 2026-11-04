@@ -1,177 +1,29 @@
-# PARKED — plan only; the integration test is not implemented
+# Independent self-configuration experiment
 
-## Status and required preconditions
+Resumed by Xavier on 2026-11-03. The native write prerequisite shipped in
+[gh provider v0.13.0](https://github.com/dekopon-agents/dekopon-provider-gh/releases/tag/v0.13.0),
+including [PR 44](https://github.com/dekopon-agents/dekopon-provider-gh/pull/44).
+The published gh-provider.wasm SHA-256 is
+`8fe93ef36199e3689f7a260c505343beb9dd4b7a8c0b0edaa3f5adadd7d3ceed`.
+Its released skill and disabled policy example were read before implementation.
 
-**Owner decision: park this integration test until the required native `gh` tools land.** Do not implement the harness, dispatch CI, provision a cluster or spend model credit while parked. Existing GitHub/OpenRouter resources remain provisioned; this pause does not revoke or rotate them.
+The manual workflow creates an isolated kind cluster and run branch. A working
+Terra agent reads and updates one configuration file through native gh. Argo
+reconciles the observed commit and the gateway reloads it. A separate verifier
+principal sends a new nonce in a new conversation and checks the changed prefix.
+Only the trusted baseline runs assertions. CI fixture commits never count as
+agent success. Runtime bounds and artifact pins live in the workflow and driver.
+The three-call configuration-turn limit permits at most three writes; challenge
+principals cannot write. Unknown write outcomes require a state read.
 
-Resume only when all prerequisite evidence is available:
+GitHub App dekopon-integration-self-configure (5550939), installation 177097001,
+is selected only for this repository. Its private key and the OpenRouter key
+remain repository-selected organization secrets. The intended model is
+openai/gpt-6.1-terra, with no fallback, under the existing $10 non-resetting cap.
+The workflow checks allowance before inference and records allowance afterward.
+No new credentials or budget are authorized.
 
-- [x] The missing native file-write prerequisite is queued as priority work in Diaphanous Dilettantes (2026-11-01 UTC). Dispatch details remain in the private campaign ledger; no implementation has been launched by this planning session.
-- [ ] The provider implements bounded single-file creation/replacement, with explicit repository/branch selection, enforceable path restrictions, documented file-SHA conflict behavior and broker-only credentials. Use the released command contract, not an invented upstream CLI spelling.
-- [ ] The provider's required tests pass, including real-component request evidence, denied/out-of-scope writes, stale-file/conflict handling and no automatic write retry.
-- [ ] A compatible provider artifact is released by its source repository. Record its release URL, version, checksum/digest, actual command/input contract and required Dekopon image/chart versions here. A plan, queued task, open PR or unreleased merge does not unblock this test.
-
-Before the first live run after resumption, verify the App installation and repository-selected secrets, remaining OpenRouter allowance and the $10 non-resetting limit. Bind the agent only to the intended run branch/config paths, and establish the independent verifier, runtime bounds and cleanup described below.
-
-Queueing is the only completed prerequisite; it is not an implementation or release receipt. There is no active implementation worker, automatic dependency watcher or pending integration run. Revisit explicitly when the provider release is available; do not bypass the dependency with an unrestricted CLI, arbitrary API writes or CI-authored changes presented as agent success.
-
-Only the file-commit power is a known missing agent capability for the first scenario. Broader PR, issue, release, secret-management and repository-administration parity is not a prerequisite.
-
-## Goal
-
-A self-contained integration test of a Dekopon agent modifying its own configuration through native `gh` commands, committing changes to this repository, and observing itself reconfigure through Argo CD. GitHub Actions starts the experiment through `workflow_dispatch`, bootstraps kind and Argo CD, and uses this repository as an Argo app-of-apps.
-
-The broader owner goal is an agent “driving itself until it's up.” The proposed first scenario below is narrower: an already-working seed agent changes reloadable configuration. That narrowing is a proposal, not an owner requirement to exclude restart or deployment-repair scenarios.
-
-## Decisions and provisioned resources
-
-- Organization: https://github.com/dekopon-agents-integration-testing — GitHub Free, personally owned.
-- Repository: https://github.com/dekopon-agents-integration-testing/self-configure — public.
-- The owner explicitly authorized implementing the harness directly on `main`.
-- Organization-owned GitHub App: `dekopon-integration-self-configure`, App ID `5550939`.
-- Installation ID: `177097001`, selected repository `self-configure` only.
-- App permissions: Contents read/write and Metadata read; webhooks disabled.
-- OpenRouter workspace: Scientist.com / Default Workspace.
-- OpenRouter key name: `dekopon-agents-integration-testing-self-configure`; workspace-owned, $10 total non-resetting limit, no expiration.
-- Proposed model: `openai/gpt-6.1-terra`; no silent model fallback.
-
-Organization Actions secrets, each restricted to this repository:
-
-| Name | Purpose |
-| --- | --- |
-| `SELF_CONFIGURE_APP_PRIVATE_KEY` | Broker-side GitHub App authentication |
-| `OPENROUTER_API_KEY` | Model-client authentication |
-
-Organization Actions variables, likewise restricted to this repository:
-
-| Name | Value |
-| --- | --- |
-| `SELF_CONFIGURE_APP_ID` | `5550939` |
-| `SELF_CONFIGURE_APP_INSTALLATION_ID` | `177097001` |
-
-Credential values are not stored in Git. Temporary credential-transfer files were removed after organization-secret storage was verified. No workflow, cluster, or paid inference test has run.
-
-## Blocking prerequisite: native repository file writes
-
-At assessment, `dekopon-provider-gh` main and its latest release, `v0.12.0`, lacked repository file writes. Its `gh` command is a bounded native provider interface, not the full upstream CLI; arbitrary `gh api` writes are intentionally unavailable.
-
-Planning update, 2026-11-01 UTC: the native file-write prerequisite is now queued as priority work. The first integration scenario needs only one bounded configuration file created or replaced per commit. The earlier multi-file/delete/head-CAS proposal was not an owner-frozen requirement and is no longer a prerequisite.
-
-A replacement must pin the expected file version. This does not promise compare-and-swap on the entire branch head: an unrelated commit may advance the branch. CI creates the isolated run branch, the agent changes only its permitted configuration file, and the independent verifier checks the resulting commit and activation. No deletes, multi-file transaction, generic API passthrough or automatic retries are needed.
-
-Exact command/schema, bounds and artifact pins will be taken from the released provider. Keep the scenario within one small data/configuration file; do not simulate a multi-file transaction through sequential writes or substitute CI-authored changes for agent success.
-
-The existing private campaign-trail epoch is `store/epochs/diaphanous-dilettantes/`, with related work under `21-gh-parity/`. Its parity inventory already plans PR/issue creation and editing, releases, secrets and repository administration. Do not duplicate those tasks; none is required for this first scenario.
-
-Build and release the new provider in its owning source repository, then consume a pinned version and checksum here. This repository must not clone and compile upstream source as its artifact-production mechanism.
-
-## Proposed first scenario
-
-```text
-workflow_dispatch
-  -> fixed CI driver
-  -> kind + pinned Argo CD
-  -> credentials + root Application
-  -> working seed Dekopon agent
-  -> authenticated task delivery
-  -> agent commits its own configuration on a run branch
-  -> Argo applies that exact commit
-  -> gateway activates the new configuration
-  -> fresh invocation demonstrates changed behavior
-  -> independent verdict, evidence upload, cleanup
-```
-
-### Fixed bootstrap
-
-CI owns cluster creation, credential injection, root/child Application definitions, broker authority, initial agent configuration, verification and cleanup. The agent cannot bootstrap itself from a state where it cannot run.
-
-Use published, compatible Dekopon image/chart/provider artifacts pinned by version and digest/checksum. Keep gateway and broker process/credential separation intact. Inject the App credential only into the broker's supported credential path; the OpenRouter key belongs only to the model client.
-
-The root Application and all child sources for a run must resolve to the intended run branch. CI creates `runs/<run-id>-<attempt>` from a recorded baseline. Harness development occurs on `main`, but experimental agent commits do not accumulate there and make later runs start already configured.
-
-### Writable surface
-
-Initially permit only a small agent/catalog configuration surface. Keep CI workflows, test assertions, broker grants, credentials, Argo projects, Application definitions, RBAC and arbitrary workloads out of the agent's writable paths.
-
-GitHub App Contents write is repository-wide, not a path restriction. Enforce the narrower boundary in the provider/broker and protect the harness branch separately. Unrestricted Argo manifest writes could deploy a workload that reads Kubernetes Secrets; merely hiding credentials from the prompt is not sufficient.
-
-### Trigger and reconciliation
-
-CI delivers an authenticated initial event locally, using the supported gateway transport and a port-forward as appropriate. This exercises event admission and the agent, but does not prove GitHub's outbound webhook delivery. A real GitHub webhook into kind would require a reachable endpoint/tunnel and is not part of this first scenario.
-
-Argo reconciles Git to Kubernetes. Gateway catalog/agent configuration supports hot reload; broker configuration and some gateway fields require a restart. Select one genuinely reloadable setting with an independently observable behavioral consequence during implementation.
-
-Do not count a current model turn saying it changed as evidence of activation. After observing reconciliation/activation, CI delivers a fresh challenge. CI may provide bounded observations or follow-up triggers, but must not author the agent's corrective configuration.
-
-### Independent pass criteria
-
-All of the following must hold:
-
-1. The seed configuration does not satisfy the target behavior.
-2. The agent produces a permitted configuration change through the native provider.
-3. Git records the expected commit and no out-of-scope changes.
-4. Argo applies that exact commit, not merely some healthy revision.
-5. The running gateway activates the changed configuration.
-6. A fresh invocation demonstrates the target behavior.
-
-Neither an agent's “done” message, Argo `Synced`, nor pod readiness alone is a passing result. The verifier runs from the fixed trusted harness, never from agent-modified test code on the run branch.
-
-No other missing agent powers are currently known for this narrow scenario: repository reads already exist, CI creates branches and triggers turns, and Argo applies the changes. The agent needs no PR creation, secret management, Kubernetes administrator access or Actions dispatch permission. Runtime integration remains untested; this is not a claim that no further defects will be found.
-
-## Proposed repository layout
-
-```text
-.github/workflows/self-configure.yml
-bootstrap/                 # fixed root Application and restricted AppProject
-apps/                      # fixed child Application definitions
-config/seed/               # initially working agent
-config/mutable/            # narrowly permitted self-modification surface
-tests/                     # driver and independent assertions
-```
-
-Exact paths and implementation language are not yet chosen. Keep the harness small rather than creating a general orchestration framework.
-
-## Bounds, evidence and cleanup
-
-Proposed initial limits:
-
-- Manual dispatch only; no recursive workflow launches from agent commits.
-- One run at a time.
-- Twenty-minute overall timeout.
-- At most three agent-authored correction commits.
-- Explicit model-step, tool-call and output limits.
-- Stop on credit exhaustion, denied writes or unrecoverable bootstrap failure.
-
-The OpenRouter $10 cap is a total spending allowance against workspace credit, not a separately funded wallet or a GitHub Actions budget. No top-up or larger budget is implied.
-
-Upload bounded, sanitized evidence on success and failure: baseline and resulting SHAs, config diff, artifact pins, Argo applied revision, reload records, challenge results, trace references and available model usage. Do not upload Secrets, private keys, tokens or credential-bearing environment dumps.
-
-Always destroy the task-owned cluster and stop tunnels/forwarders. Preserve failed-run evidence before cleaning up temporary branches. Do not automatically retry until green or substitute an infrastructure pass for agent success.
-
-## Implementation sequence
-
-1. Upstream prerequisite, now queued but not implemented: settle the native single-file write contract, implement and release it in `dekopon-provider-gh`.
-2. Once the required preconditions above are evidenced and this plan is explicitly resumed, implement the fixed CI/bootstrap harness on this repository's `main`, using `workflow_dispatch`.
-3. Prove deterministic reconciliation with a CI-authored fixture change. Label this infrastructure validation, not the agent test.
-4. Replace the fixture writer with Terra using the released native `gh` capability; keep the same independent verifier.
-5. Run the real bounded experiment and record actual results, failures and spending.
-6. Decide the next scenario against the broader self-bootstrap goal.
-
-## Broader requested goal not yet covered
-
-The owner wants an agent driving itself until it is up. The first scenario does **not** yet demonstrate:
-
-- Repair of an initially broken deployment.
-- Restart-required reconfiguration and continuation after restarting itself.
-- Arbitrary app-of-apps or workload changes.
-- Real external GitHub webhook delivery into the ephemeral cluster.
-
-The first three require an explicit follow-on design for authority, restart/continuation, observations and independent success criteria. They were narrowed out by the proposed first test, not rejected by the owner. External webhook delivery is an optional additional transport test, not a necessary condition of self-configuration.
-
-## Resume checklist
-
-- Recheck actual repository, provider release and epoch queue state; this document is a checkpoint, not live status.
-- Fill in the prerequisite evidence above, including the real epoch task reference and released artifact pins. Remain parked if any prerequisite is missing.
-- Confirm the dedicated OpenRouter key still has allowance and the GitHub App installation still targets only this repository; do not expose credential values.
-- Record the explicit resumption before starting implementation or dispatching a run.
-- Preserve the distinction between provisioned credentials, implemented infrastructure and a proven agent-driven passing run.
+The evidence artifact is the run receipt, including failed verdicts. A single
+manual run is authorized; preserve its outcome without automatically rerunning.
+Restart survival, broken deployment repair, arbitrary workload changes and real
+external webhook delivery remain follow-ons. No RPi deployment is involved.
