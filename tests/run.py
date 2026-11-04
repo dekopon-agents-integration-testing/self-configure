@@ -96,7 +96,10 @@ def application(name, path, revision):
 
 
 def synced(name, sha):
-    a = json.loads(k("-n", "argocd", "get", "application", name, "-o", "json"))
+    raw = k("-n", "argocd", "get", "application", name, "-o", "json", "--ignore-not-found")
+    if not raw.strip():
+        return False
+    a = json.loads(raw)
     return (
         a.get("status", {}).get("sync", {}).get("revision") == sha
         and a.get("status", {}).get("sync", {}).get("status") == "Synced"

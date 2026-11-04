@@ -42,5 +42,20 @@ class CommitVerification(unittest.TestCase):
             self.check_history([run.PATH], 4)
 
 
+class Reconciliation(unittest.TestCase):
+    def test_child_not_created_yet_keeps_waiting(self):
+        with patch.object(run, "k", return_value="") as kubectl:
+            self.assertFalse(run.synced("catalog", "expected"))
+            self.assertIn("--ignore-not-found", kubectl.call_args.args)
+
+    def test_synced_wrong_revision_cannot_pass(self):
+        with patch.object(run, "k", return_value='{"status":{"sync":{"status":"Synced","revision":"other"}}}'):
+            self.assertFalse(run.synced("catalog", "expected"))
+
+    def test_exact_synced_revision_passes(self):
+        with patch.object(run, "k", return_value='{"status":{"sync":{"status":"Synced","revision":"expected"}}}'):
+            self.assertTrue(run.synced("catalog", "expected"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,3 +27,20 @@ The evidence artifact is the run receipt, including failed verdicts. A single
 manual run is authorized; preserve its outcome without automatically rerunning.
 Restart survival, broken deployment repair, arbitrary workload changes and real
 external webhook delivery remain follow-ons. No RPi deployment is involved.
+
+## First run receipt
+
+[Run 41755414870](https://github.com/dekopon-agents-integration-testing/self-configure/actions/runs/41755414870)
+tested `5b42ab2243f04d4f125261b21cbea5ac3c8f6be4` and failed before inference.
+Kind and Argo bootstrap completed. CI created fixture commit
+`31fea007f57ecf4b1adb53ec9f04b9275e0f8bbc`; the driver immediately queried
+the not-yet-created catalog Application and aborted on NotFound.
+No agent-authored commit, applied candidate, activation or fresh-turn success
+was observed. OpenRouter usage remained $0, with $10 remaining and no reset.
+The sanitized evidence artifact includes the failure and spending receipts.
+Cluster, run branch and Docker network cleanup completed; the App token was
+revoked by the token action's post step.
+
+The polling fix treats an absent child as pending while retaining the bounded
+deadline. Regression tests cover absence and exact revision matching. This fix
+has local validation only; no second dispatch was performed.
