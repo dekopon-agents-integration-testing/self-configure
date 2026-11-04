@@ -270,23 +270,12 @@ def main():
     wait(lambda: synced("catalog", seed), 240)
     phase("startup")
     k("-n", "experiment", "rollout", "status", "deployment/dekopon", "--timeout=300s")
-    wait(
-        lambda: (
-            k(
-                "-n",
-                "experiment",
-                "exec",
-                "deployment/dekopon",
-                "-c",
-                "helper",
-                "--",
-                "python",
-                "-c",
-                'import os; print(os.path.exists("/tmp/chat.sock"))',
-            ).strip()
-            == "True"
-        )
-    )
+    def socket_ready():
+        try: raw = logs("gateway")
+        except RuntimeError: raw = ""
+        assert not any(e.get("event") == "gateway_exit" for e in events(raw)), "gateway exited during startup; inspect gateway logs"
+        return k("-n","experiment","exec","deployment/dekopon","-c","helper","--","python","-c",'import os; print(os.path.exists("/tmp/chat.sock"))').strip() == "True"
+    wait(socket_ready)
     phase("baseline")
     nonce = uuid.uuid4().hex
     response = ask("CHALLENGE:" + nonce)

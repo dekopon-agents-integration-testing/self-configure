@@ -16,10 +16,10 @@ def dump(value):
 
 
 def render(branch, chart):
-    policy = """permit(principal == Dekopon::Principal::"tester", action == Dekopon::Action::"agent.prompt", resource == Dekopon::Agent::"self-configure") when { context.via == "gateway" };
-permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"gh.content.read", Dekopon::Action::"gh.content.write"], resource == Dekopon::Provider::"gh") when { context.via == "gateway" && context.agent == "self-configure" };
+    policy = """permit(principal == Dekopon::Principal::"tester", action == Dekopon::Action::"agent.prompt", resource == Dekopon::Agent::"self-configure") when { context.via == "dekopon-gatewayd" };
+permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"gh.content.read", Dekopon::Action::"gh.content.write"], resource == Dekopon::Provider::"gh") when { context.via == "dekopon-gatewayd" && context.agent == "self-configure" };
 """
-    policy += 'permit(principal == Dekopon::Principal::"verifier", action == Dekopon::Action::"agent.prompt", resource == Dekopon::Agent::"self-configure") when { context.via == "gateway" };\n'
+    policy += 'permit(principal == Dekopon::Principal::"verifier", action == Dekopon::Action::"agent.prompt", resource == Dekopon::Agent::"self-configure") when { context.via == "dekopon-gatewayd" };\n'
     for action, method, extra in [
         (
             "write",
@@ -70,8 +70,8 @@ permit(principal == Dekopon::Principal::"tester", action in [Dekopon::Action::"g
             },
             {
                 "uid": 65533,
-                "principal": "gateway",
-                "actor": {"type": "service", "principal": "gateway"},
+                "principal": "dekopon-gatewayd",
+                "actor": {"type": "service", "principal": "dekopon-gatewayd"},
                 "attestor": {"namespaces": ["drn:tel:*:*:*"]},
             },
         ],

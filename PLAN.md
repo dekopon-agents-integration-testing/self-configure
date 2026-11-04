@@ -68,3 +68,9 @@ Xavier authorized up to ten additional manual runs after the second receipt,
 within the existing $10 total model allowance. Stop on success or either limit.
 Every further dispatch follows a diagnosed defect and concrete repair; failed
 runs remain preserved. No authority, credential or budget expansion is implied.
+
+Bounded-push attempt 1: run 41763859658 tested 4a3ddf9. Provider ownership
+was accepted and gh v0.13.0 loaded. Gateway startup refused because its service
+principal was `gateway`, while the runtime's reconciliation owner is
+`dekopon-gatewayd`. No inference occurred; allowance remains $10. Cleanup
+completed. The repair names that existing runtime identity in mapping and policy.
